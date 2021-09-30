@@ -1,0 +1,2 @@
+Given a input sentence (your paper's title), this code generates all possible abbreviate words,
+whose characters are all from the given sentence.
