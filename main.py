@@ -8,7 +8,7 @@ import threading
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--title", type=str,
+parser.add_argument("--title", default='Generate Fantastic Title by Using a Single Line Command', type=str,
                         help="This is your paper title")
 parser.add_argument("--word_len", default=5, type=int,
                         help="This is the generated word length")
@@ -132,8 +132,6 @@ class BeautifulTitle:
 
 
 if __name__ == '__main__':
-    # wn.ensure_loaded()
-    sent = "Event Enhanced Visual-Linguistic Contrastive Representation"
-    bt = BeautifulTitle(sent, word_len=args.word_len, constraint=args.constraint, num_threads=args.num_threads)
+    bt = BeautifulTitle(args.title, word_len=args.word_len, constraint=args.constraint, num_threads=args.num_threads)
     valid_words = bt()
     print(valid_words)
