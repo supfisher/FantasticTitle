@@ -128,7 +128,7 @@ class BeautifulTitle:
         for thread in self.threads:
             self.valid_words.extend(thread.valid_words)
 
-        return set(self.valid_words)
+        return sorted(set(self.valid_words))
 
 
 if __name__ == '__main__':
