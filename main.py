@@ -1,8 +1,6 @@
 import nltk
-# nltk.download('words')
-# nltk.download('averaged_perceptron_tagger')
-from nltk.corpus import wordnet as wn
-
+nltk.download('words')
+nltk.download('averaged_perceptron_tagger')
 from nltk.corpus import words
 import re
 from itertools import combinations, permutations
@@ -14,9 +12,11 @@ parser.add_argument("--title", type=str,
                         help="This is your paper title")
 parser.add_argument("--word_len", default=5, type=int,
                         help="This is the generated word length")
+parser.add_argument("--mnc", "--max_num_char", default=1, type=int,
+                        help="This is the max number of character allowed to select in one word.")
 parser.add_argument("--num_threads", default=10, type=int,
                         help="This is the number of threads to run the code")
-parser.add_argument("--constraint", default='ocow', type=str,
+parser.add_argument("--constraint", default='mcow', type=str,
                         help="This is the type of the constraint to generate an abbreviate word")
 
 args = parser.parse_args()
@@ -34,7 +34,6 @@ class CheckWord (threading.Thread):
         for word in self.words:
             word = ''.join(word).lower()
             if self.is_english_word(word) and word not in self.valid_words:
-                print(word)
                 self.valid_words.append(word)
 
     def is_english_word(self, word):
@@ -42,9 +41,10 @@ class CheckWord (threading.Thread):
 
 
 class BeautifulTitle:
-    def __init__(self, sentence, word_len=3, constraint='ocow', num_threads=10):
+    def __init__(self, sentence, word_len=3, constraint='ocow', num_threads=10, max_num_char=1):
         self.word_len = word_len
         self.constraint = constraint
+        self.max_num_char = max_num_char
         sents = self.preprocess_sentence(sentence)
         words = self.generate_words(sents)
         self.threads = []
@@ -85,26 +85,26 @@ class BeautifulTitle:
     def generate_words(self, sentence):
         if self.constraint == 'random':
             return self.random_generate_words(sentence)
-        elif self.constraint == 'ocow':
-            return self.ocow_generate_words(sentence)
+        elif self.constraint == 'mcow':
+            return self.mcow_generate_words(sentence, max_num_char=self.max_num_char)
 
     def random_generate_words(self, sents):
         sentence = ''.join(re.split(r'[^A-Za-z]', sents))
         return list(combinations(sentence, self.word_len))
 
-    def ocow_generate_words(self, sents):
+    def mcow_generate_words(self, sents, max_num_char):
         """
-            one character from one word
+            multiple character from one word
         """
 
         def itera_sent(sents):
             if len(sents) > 1:
-                for c in sents[0]:
+                for c in self.__iter_word(sents[0], max_num_char):
                     tmp = c
                     for candidate in itera_sent(sents[1:]):
                         yield (tmp + candidate).lower()
             else:
-                for c in sents[0]:
+                for c in self.__iter_word(sents[0], max_num_char):
                     yield c
 
         candidates = []
@@ -112,6 +112,11 @@ class BeautifulTitle:
             candidates.extend(self.random_generate_words(candidate))
 
         return candidates
+
+    def __iter_word(self, word, max_num_char=1):
+        for num_char in range(1, max_num_char+1):
+            for chars in combinations(word, num_char):
+                yield ''.join(chars)
 
     def __call__(self, *args, **kwargs):
         for thread in self.threads:
@@ -128,7 +133,7 @@ class BeautifulTitle:
 
 if __name__ == '__main__':
     # wn.ensure_loaded()
-    sent = "Communication Efficient Federated Learning via Morphing Neural Network"
+    sent = "Event Enhanced Visual-Linguistic Contrastive Representation"
     bt = BeautifulTitle(sent, word_len=args.word_len, constraint=args.constraint, num_threads=args.num_threads)
     valid_words = bt()
     print(valid_words)

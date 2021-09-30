@@ -1,2 +1,11 @@
 Given a input sentence (your paper's title), this code generates all possible abbreviate words,
 whose characters are all from the given sentence.
+
+This code use NLTK to do the input sentence pre-processing, therefore, you may need to install NLTK at first.
+Use the following command to install nltk, and download the required word dictionary.
+
+# pip install nltk
+# python -c "nltk.download('words');nltk.download('averaged_perceptron_tagger')"
+
+Using this code is simple:
+# python main.py --title "Generate Fantastic Title by Using a Single Line Command" --word_len 5 --mnc 1 --num_threads 10 --constraint 'mcow'
